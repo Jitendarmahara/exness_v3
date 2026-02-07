@@ -123,6 +123,84 @@ yarn exec turbo link
 pnpm exec turbo link
 ```
 
+
+Architure
+
+🔵 EXTERNAL SOURCE
+┌──────────────────────────┐
+│   Backpack Exchange      │
+│ (Market / Price / Trades)│
+└───────────┬──────────────┘
+            │ REST / WS
+            ▼
+🟢 INGESTION LAYER
+┌──────────────────────────┐
+│     HTTP Server          │
+│ (Adapter / Ingest API)   │
+└───────────┬──────────────┘
+            │ push
+            ▼
+🟠 QUEUE #1
+┌──────────────────────────┐
+│     Queue-1              │
+│ (Raw Market Events)      │
+└───────────┬──────────────┘
+            │ poll
+            ▼
+🟣 POLLER
+┌──────────────────────────┐
+│        Poller            │
+│ (Validate / Normalize)   │
+└───────────┬──────────────┘
+            │ push
+            ▼
+🟠 QUEUE #2
+┌──────────────────────────┐
+│     Queue-2              │
+│ (Prepared Price Data)   │
+└───────────┬──────────────┘
+            │ consume
+            ▼
+🟣 ENGINE (PRICE ENGINE)
+┌──────────────────────────┐
+│     Price Engine         │
+│ (Pricing / Logic)        │
+└───────────┬──────────────┘
+            │ HTTP
+            ▼
+🟢 HTTP BACKEND
+┌──────────────────────────┐
+│     HTTP Backend         │
+│ (API / State / Auth)     │
+└───────────┬──────────────┘
+            │ publish
+            ▼
+🟠 KAFKA QUEUE
+┌──────────────────────────┐
+│       Kafka              │
+│ (Order / Result Events)  │
+└───────────┬──────────────┘
+            │ consume
+            ▼
+🟣 ENGINE (FINAL ENGINE)
+┌──────────────────────────┐
+│     Execution Engine     │
+│ (Process / Match)        │
+└───────────┬──────────────┘
+            │ pub/sub
+            ▼
+🔴 REDIS PUB/SUB
+┌──────────────────────────┐
+│   Redis Pub/Sub          │
+│ (Realtime Responses)     │
+└───────────┬──────────────┘
+            │
+            ▼
+🟢 HTTP BACKEND
+(Response pushed back to clients)
+
+
+
 ## Useful Links
 
 Learn more about the power of Turborepo:
