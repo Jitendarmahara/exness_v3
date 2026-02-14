@@ -1,5 +1,5 @@
 import { createClient } from "redis";
-import { CheckPositionUpdates, ClosePosition, CreateOpenOrder, type Orderdetails, type PriceData } from "./helper/process";
+import { CheckPositionUpdates, ClosePosition, CreateOpenOrder, GetAllOpenTrades, type Orderdetails, type PriceData } from "./helper/process";
 import { Kafka } from "kafkajs";
 import { Type } from "./state";
 
@@ -74,7 +74,8 @@ const kafkaMessage = async () => {
         eachMessage: async({topic, partition, message}) => {
             try{
                 const request = JSON.parse(message.value?.toString()!);
-                const {responsechannel, action, order} = request;
+                const {responsechannel, order} = request;
+                const action  = order.action;
                 
                 let price: PriceData | undefined;
                 if(order.asset === "SOL_USDC"){
@@ -119,7 +120,10 @@ const kafkaMessage = async () => {
                         const assetprice = order.type === Type.LONG ? price.bid : price.ask;
                         response = ClosePosition(order.orderId, assetprice, order.userId);
                         break;
-                        
+                    
+                    case "ALL_POSITION":
+                        response = GetAllOpenTrades(order.userId)
+                        break;
                     default:
                         response = { success: false, error: "Unknown action" };
                 }

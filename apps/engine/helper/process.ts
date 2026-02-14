@@ -43,9 +43,9 @@ export function CreateOpenOrder(details: Orderdetails, Price: PriceData) {
     
     const currentprice = details.type === Type.LONG ? Price.ask : Price.bid;
     
-    // Fixed slippage logic
+
     const slipageprice = details.price * (details.slipage / 100);
-    
+  
     if (details.type === Type.LONG) {
         const maxallowed = details.price + slipageprice;
         if (currentprice > maxallowed) {
@@ -79,7 +79,7 @@ export function CreateOpenOrder(details: Orderdetails, Price: PriceData) {
     
     const order: Order = {
         userId: details.userId,
-        orderId: details.orderId,
+        orderId: details.orderId,  
         type: details.type,
         asset: details.asset,
         leverage,
@@ -238,9 +238,9 @@ export async function CheckPositionUpdates(asset: string, currentprice: PriceDat
         if (x.takeprofit !== undefined) {
             const takeprofit = (x.type === Type.LONG && price >= x.takeprofit || 
                                x.type === Type.SHORT && price <= x.takeprofit);
-            if (takeprofit) {  // Added missing check
-                const res = ClosePosition(x.orderId, price, x.asset);  // Fixed: use asset
-                await redis.publish(x.asset, JSON.stringify(res));  // Added await
+            if (takeprofit) { 
+                const res = ClosePosition(x.orderId, price, x.asset);  
+                await redis.publish(x.asset, JSON.stringify(res)); 
                 continue;
             }
         }

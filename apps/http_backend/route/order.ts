@@ -81,7 +81,7 @@ const ALLOWED_LEVERAGE = [1, 2, 5, 10, 25, 50, 100, 200, 500];
 
 
 router.post("/position/open", async (req: Request, res: Response) => {
-    const userId = Math.random().toString(32).substring(2, 15); // TODO: get from authenticated user
+    const userId = req.user?.id; 
     const orderId = Math.random().toString(32).substring(2, 10);
     const { margin, slipage, price, takeprofit, stoploss, asset, type, leverage } = req.body;
 
@@ -132,7 +132,7 @@ router.post("/position/open", async (req: Request, res: Response) => {
 
 router.post("/position/close/:orderId/:asset", async (req: Request, res: Response) => {
     const { orderId, asset } = req.params;
-    const userId = Math.random().toString(32).substring(2, 15); // TODO: get from authenticated user
+    const userId =req.user?.id 
 
     if (!orderId || typeof orderId !== "string") {
         return res.status(400).json({
@@ -152,8 +152,8 @@ router.post("/position/close/:orderId/:asset", async (req: Request, res: Respons
         const result = await SendandAwait({
             action: "CLOSE_POSITION",
             orderId,
-            userId, // Fixed: Added userId which is required by ClosePosition function
-            type: null, // Fixed: Added type field expected by engine
+            userId, 
+            type: null,
             asset
         }, 10000);
 
@@ -171,7 +171,7 @@ router.post("/position/close/:orderId/:asset", async (req: Request, res: Respons
     }
 });
 
-// Fixed: GET /positions/:userId - Complete implementation
+
 router.get("/positions/:userId", async (req: Request, res: Response) => {
     const { userId } = req.params;
 
