@@ -2,6 +2,7 @@
 import { createClient } from "redis";
 import { Kafka } from "kafkajs";
 import { Router, type Request, type Response } from "express";
+import { requireAuth } from "./user";
 
 const router = Router();
 const redisSubscriber = createClient();
@@ -80,7 +81,7 @@ function SendandAwait(order: any, timeoutMs: number = 10000) {
 const ALLOWED_LEVERAGE = [1, 2, 5, 10, 25, 50, 100, 200, 500];
 
 
-router.post("/position/open", async (req: Request, res: Response) => {
+router.post("/open", requireAuth ,  async (req: Request, res: Response) => {
     const userId = req.user?.id; 
     const orderId = Math.random().toString(32).substring(2, 10);
     const { margin, slipage, price, takeprofit, stoploss, asset, type, leverage } = req.body;
@@ -130,7 +131,7 @@ router.post("/position/open", async (req: Request, res: Response) => {
 });
 
 
-router.post("/position/close/:orderId/:asset", async (req: Request, res: Response) => {
+router.post("/close/:orderId/:asset", requireAuth , async (req: Request, res: Response) => {
     const { orderId, asset } = req.params;
     const userId =req.user?.id 
 
@@ -172,7 +173,7 @@ router.post("/position/close/:orderId/:asset", async (req: Request, res: Respons
 });
 
 
-router.get("/positions/:userId", async (req: Request, res: Response) => {
+router.get("/:userId", requireAuth ,  async (req: Request, res: Response) => {
     const { userId } = req.params;
 
     if (!userId || typeof userId !== "string") {
@@ -203,3 +204,4 @@ router.get("/positions/:userId", async (req: Request, res: Response) => {
 });
 
 export default router;
+export { router as Orderrouter };

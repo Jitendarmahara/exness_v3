@@ -1,10 +1,15 @@
 import { Router, type Request, type Response } from "express";
 import jwt from "jsonwebtoken";
 import { Resend } from "resend";
-const router = Router();
 import {client} from "db/client";
 import type { custompayload } from "../types";
+import dotenv from "dotenv";
+import path from "path"
 
+dotenv.config({path:path.resolve(__dirname , "../../.env")});
+console.log(path.resolve(__dirname , "../../.env"));
+console.log(path.resolve(__dirname ));
+const router = Router();
 const resend = new Resend(process.env.RESEND_API_KEY!)
 
 router.post("/signup", async (req: Request, res: Response) => {
@@ -36,7 +41,9 @@ router.post("/signup", async (req: Request, res: Response) => {
         { expiresIn: '15m' }
     );
 
-    const result = await sendemail(email, token);
+    const result = {
+        success:true
+    }        //await sendemail(email, token);
     
     if(!result.success) {
         return res.status(500).json({
@@ -47,7 +54,8 @@ router.post("/signup", async (req: Request, res: Response) => {
 
     return res.status(200).json({
         success: true,
-        message: "please check the mail to verify"
+        message: "please check the mail to verify",
+        token
     })
 })
 
@@ -82,12 +90,7 @@ router.get("/signin/post", async (req: Request, res: Response) => {
             { expiresIn: '7d' }
         );
 
-        res.cookie('session', sessionToken, {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
-            sameSite: 'strict',
-            maxAge: 7 * 24 * 60 * 60 * 1000 
-        });
+        res.cookie('session', sessionToken);
 
         return res.status(200).json({
             success: true,
@@ -115,6 +118,7 @@ router.post("/logout", (req: Request, res: Response) => {
         message: "Logged out successfully"
     });
 });
+
 
 
 export const requireAuth = async (req: Request, res: Response, next: Function) => {
@@ -148,37 +152,10 @@ export const requireAuth = async (req: Request, res: Response, next: Function) =
 };
 
 
-router.get("/me", requireAuth, async (req: Request, res: Response) => {
-    try {
-        const user = await client.user.findUnique({
-            where: { id: req.user!.id }
-        });
 
-        if (!user) {
-            return res.status(404).json({
-                success: false,
-                error: "User not found"
-            });
-        }
-
-        return res.status(200).json({
-            success: true,
-            user: {
-                id: user.id,
-                email: user.email,
-                lastLoggedIn: user.lastLoggedIn
-            }
-        });
-    } catch (error) {
-        return res.status(500).json({
-            success: false,
-            error: "Server error"
-        });
-    }
-});
 
 async function sendemail(email: string, token: string) {
-    const link = `http://localhost:3001/api/v1/signin/post?token=${token}`;
+    const link = `http://localhost:3000/api/v1/signin/post?token=${token}`;
     
     try {
         const {data, error} = await resend.emails.send({
@@ -240,3 +217,5 @@ async function sendemail(email: string, token: string) {
 }
 
 export default router;
+
+export {router as Userrouter};

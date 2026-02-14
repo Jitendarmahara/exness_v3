@@ -5,15 +5,18 @@
   "private": true,
   "devDependencies": {
     "@types/bun": "latest",
-    "db":"*"
+    "db": "*"
   },
   "peerDependencies": {
     "typescript": "^5"
   },
   "dependencies": {
+    "@types/cors": "^2.8.19",
     "@types/express": "^5.0.6",
     "@types/jsonwebtoken": "^9.0.10",
     "@types/redis": "^4.0.11",
+    "cors": "^2.8.6",
+    "dotenv": "^17.3.1",
     "express": "^5.2.1",
     "jsonwebtoken": "^9.0.3",
     "kafkajs": "^2.2.4",
